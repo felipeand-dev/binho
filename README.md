@@ -4,6 +4,8 @@ Ferramenta web para o professor sortear alunos em sala de aula. Cole a lista cop
 SUAP (ou um nome por linha), clique em **Sortear** e os nomes giram até parar no
 sorteado. Ninguém sai duas vezes até você reiniciar.
 
+**Site:** <https://binho-sorteio.vercel.app> · **Código:** <https://github.com/felipeand-dev/binho>
+
 - **Sem cadastro e sem login:** é só abrir o link.
 - **Nada fica guardado:** a lista vive num cookie da sessão do seu navegador e some
   quando você fecha o navegador. Só os nomes são usados; as matrículas são descartadas.
@@ -40,6 +42,9 @@ Abra <http://127.0.0.1:8000/>. Não há `migrate`: o projeto não usa banco de d
    `python -c "import secrets; print(secrets.token_urlsafe(50))"`). Sem essa variável
    o site não sobe, porque a chave assina o cookie do sorteio.
 4. Faça o deploy e envie o link `https://<projeto>.vercel.app` para o professor.
+
+Este repositório já está ligado ao projeto `binho` da Vercel: cada `git push` na `main`
+publica automaticamente em <https://binho-sorteio.vercel.app>.
 
 Na Vercel o modo de produção é automático (`DEBUG` desligado, cookies seguros, HTTPS).
 Variáveis opcionais: `DJANGO_ALLOWED_HOSTS` e `DJANGO_CSRF_TRUSTED_ORIGINS` (para um
