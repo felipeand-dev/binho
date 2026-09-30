@@ -153,7 +153,7 @@
     inicial: 'Cole a lista abaixo para ver os nomes aqui.',
     vazio: 'Nenhum nome encontrado. Confira se copiou a lista de alunos do SUAP ou digite um nome por linha.',
     suap: 'Lista do SUAP reconhecida: só os nomes serão usados.',
-    lista: 'Lista simples: um nome por linha.',
+    lista: 'Lista simples: um nome por linha, só com letras.',
   };
 
   function desenharPrevia(area, dados) {
@@ -165,6 +165,12 @@
     const aviso = campo('aviso');
     const tipo = dados.inicial ? 'inicial' : (dados.encontrados ? dados.formato : 'vazio');
     aviso.textContent = AVISOS_PREVIA[tipo];
+    if (dados.descartadas) {
+      // RN-15: linhas sem nome (números, traços, símbolos) foram ignoradas pelo servidor.
+      aviso.textContent += dados.descartadas === 1
+        ? ' 1 linha sem nome foi ignorada.'
+        : ` ${dados.descartadas} linhas sem nome foram ignoradas.`;
+    }
     if (tipo === 'vazio') aviso.dataset.tipo = 'vazio';
     else delete aviso.dataset.tipo;
 

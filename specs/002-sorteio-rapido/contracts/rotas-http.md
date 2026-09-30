@@ -24,7 +24,7 @@ Convenções:
 ## JSON da prévia (`/previa/`)
 
 ```json
-{"ok": true, "formato": "suap", "encontrados": 32, "novos": 32, "ja_na_lista": 0,
+{"ok": true, "formato": "suap", "encontrados": 32, "novos": 32, "ja_na_lista": 0, "descartadas": 0,
  "nomes": [{"nome": "ADRIANO MOREIRA DA COSTA", "ja_na_lista": false}]}
 ```
 

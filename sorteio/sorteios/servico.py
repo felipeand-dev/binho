@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 from sorteio.regras import RegraNegocioError
 
-from .importador import chave_nome, detectar_formato, extrair_nomes
+from .importador import chave_nome, contar_descartadas, detectar_formato, extrair_nomes
 
 CHAVE_SESSAO = 'sorteio'
 LIMITE_NOMES = 80
@@ -33,6 +33,7 @@ class Previa:
     formato: str
     nomes: list
     ja_na_lista: list
+    descartadas: int = 0
 
     @property
     def encontrados(self):
@@ -49,6 +50,7 @@ class Previa:
             'encontrados': self.encontrados,
             'novos': self.novos,
             'ja_na_lista': self.encontrados - self.novos,
+            'descartadas': self.descartadas,
             'nomes': [
                 {'nome': nome, 'ja_na_lista': repetido}
                 for nome, repetido in zip(self.nomes, self.ja_na_lista)
@@ -158,6 +160,7 @@ class SorteioDaSessao:
             formato=detectar_formato(texto),
             nomes=nomes,
             ja_na_lista=[chave_nome(nome) in existentes for nome in nomes],
+            descartadas=contar_descartadas(texto),
         )
 
     def iniciar(self, texto):

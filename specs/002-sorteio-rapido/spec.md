@@ -158,6 +158,9 @@ tem a sua lista; fechar o navegador, abrir de novo e ver o campo de colar nomes 
   repete um nome.
 - Lista acima do limite de nomes → o sistema recusa e informa o limite.
 - Nome com mais de 150 caracteres → ignorado (não é nome).
+- Linha com números, traços ou símbolos ("1. Maria Silva - 2026ABC", "Ana-Maria", "###")
+  → sobra só o nome ("Maria Silva", "Ana Maria"); linha sem nome ("12345", "---") é
+  descartada e contada na prévia como ignorada.
 - Falha de comunicação durante o sorteio → a animação não para em nenhum nome, o sistema
   avisa o erro e o botão volta a ficar disponível.
 
@@ -177,6 +180,10 @@ tem a sua lista; fechar o navegador, abrir de novo e ver o campo de colar nomes 
   quais são.
 - **FR-005**: Nomes repetidos (ignorando acentos, maiúsculas e espaços extras) DEVEM
   entrar uma vez só; os nomes DEVEM ser exibidos como vieram, sem espaços extras.
+- **FR-027**: Os nomes DEVEM conter só letras (com acento), espaços e apóstrofo entre
+  letras: números, traços, pontuação e símbolos DEVEM ser removidos antes de usar; linhas
+  que ficarem com menos de 2 letras (lixo) DEVEM ser descartadas, e a prévia DEVE informar
+  quantas linhas foram ignoradas.
 - **FR-006**: Texto sem nenhum nome DEVE gerar o aviso "Nenhum nome encontrado" sem
   começar o sorteio.
 - **FR-007**: A lista DEVE aceitar até 80 nomes; acima disso, o sistema DEVE recusar e

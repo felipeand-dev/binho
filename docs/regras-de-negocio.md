@@ -14,6 +14,11 @@ Constituição vigente: 2.0.0. A versão 1 (turmas e banco de dados) está em
 - **RN-03** — Nomes repetidos (ignorando acentos, maiúsculas e espaços extras) entram uma
   vez só, tanto no texto colado quanto ao adicionar nomes a uma lista em uso.
 - **RN-04** — Antes de usar, o sistema mostra quantos nomes encontrou e quais são.
+- **RN-15** — Um nome só pode ter **letras** (com acento), espaços e apóstrofo entre letras
+  (ex.: D'Ávila). Números, traços, pontuação e símbolos são removidos (traços e pontos viram
+  espaço: "Ana-Maria" → "Ana Maria"; "1. Maria Silva" → "Maria Silva"). Linhas que ficam com
+  menos de 2 letras, e rótulos do SUAP soltos ("Foto de", "Matrícula"), são **descartadas** e
+  a prévia informa quantas foram ignoradas.
 - **RN-08** — A lista aceita até **80 nomes**.
 - **RN-09** — Nomes adicionados com a lista em uso entram como **disponíveis**.
 - **RN-12** — "Limpar lista" (com confirmação) apaga nomes, sorteados e rodada.

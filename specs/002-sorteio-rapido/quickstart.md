@@ -45,3 +45,4 @@ Abrir `http://127.0.0.1:8000/`. Não há `migrate`: o projeto não tem banco.
 | 25 | SC-003 | Do site aberto ao 1º sorteado | Menos de 30 s |
 | 26 | Constituição II | GET em `/sortear/` | 405 |
 | 27 | Constituição II | Cookie da sessão alterado à mão | Estado rejeitado (volta sem lista), nada é sorteado a partir dele |
+| 28 | FR-027 | Colar "1. Maria Silva - 2026ABC", "Ana-Maria Souza", "João D'Ávila", "12345", "---", "###" e "X" | Prévia: 3 nomes ("Maria Silva", "Ana Maria Souza", "João D'Ávila") e o aviso de 4 linhas ignoradas; sem números nem traços |

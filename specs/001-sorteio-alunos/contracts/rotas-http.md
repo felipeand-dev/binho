@@ -36,7 +36,7 @@ Interface que o sistema expõe ao navegador. Convenções:
   "novos": 30,
   "duplicados": 2,
   "alunos": [
-    {"nome": "ADRIANO MOREIRA DA COSTA", "matricula": "20261FICTEX0027", "duplicado": false}
+    {"nome": "ADRIANO MOREIRA DA COSTA", "matricula": "20261FICTEX0001", "duplicado": false}
   ]
 }
 ```
