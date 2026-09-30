@@ -1,0 +1,34 @@
+{% comment %}
+Campo para colar os nomes + prévia ao vivo.
+Uso: {% include 'sorteios/_colar_nomes.html' with id='colar-inicio' acao=url botao='Usar esta lista' com_versao=False %}
+{% endcomment %}
+<form method="post" action="{{ acao }}" class="colar">
+  {% csrf_token %}
+  {% if com_versao %}<input type="hidden" name="versao" value="{{ sorteio.versao }}">{% endif %}
+  <div class="colar-grade">
+    <div class="colar-campo">
+      <label class="campo-rotulo" for="{{ id }}">Nomes dos alunos</label>
+      <textarea name="texto" id="{{ id }}" rows="10" spellcheck="false" class="entrada entrada-lista"
+                placeholder="Cole aqui a lista copiada do SUAP ou um nome por linha."
+                data-url-previa="{% url 'sorteios:previa' %}" data-previa-alvo="#{{ id }}-previa"
+                aria-describedby="{{ id }}-dica">{% if valor %}{{ valor }}{% endif %}</textarea>
+      <p class="campo-dica" id="{{ id }}-dica">Lista do SUAP ou um nome por linha. Matrículas são ignoradas e nada fica guardado depois que você fecha o navegador.</p>
+      <details class="como-copiar">
+        <summary><i class="bi bi-info-circle" aria-hidden="true"></i> Como copiar do SUAP</summary>
+        <ol>
+          <li>No SUAP, abra a turma e vá até a lista de alunos.</li>
+          <li>Selecione a lista inteira com o mouse e copie com <kbd>Ctrl</kbd>+<kbd>C</kbd>.</li>
+          <li>Clique no campo acima e cole com <kbd>Ctrl</kbd>+<kbd>V</kbd>. Fotos e matrículas são ignoradas.</li>
+        </ol>
+      </details>
+    </div>
+    <div class="colar-previa" id="{{ id }}-previa" aria-live="polite">
+      {% include 'sorteios/_previa.html' %}
+    </div>
+  </div>
+  <div class="colar-acoes">
+    <button type="submit" class="botao botao-ouro botao-grande">
+      <i class="bi bi-{{ icone|default:'play-fill' }}" aria-hidden="true"></i> {{ botao }}
+    </button>
+  </div>
+</form>

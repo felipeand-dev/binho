@@ -1,0 +1,12 @@
+{# Prévia da lista colada. O app.js redesenha este bloco com o JSON de /previa/. #}
+<div class="previa-resumo">
+  <p class="previa-total"><span class="numero" data-previa="encontrados">{{ previa.encontrados|default:0 }}</span> nomes encontrados</p>
+  {% if sorteio.tem_lista %}
+    <p class="previa-detalhe">
+      <span class="numero" data-previa="novos">{{ previa.novos|default:0 }}</span> novos ·
+      <span class="numero" data-previa="ja_na_lista">{{ previa.ja_na_lista|default:0 }}</span> já na lista
+    </p>
+  {% endif %}
+</div>
+<p class="previa-aviso" data-previa="aviso">A prévia aparece aqui assim que você colar os nomes.</p>
+<ol class="previa-lista" data-previa="lista"></ol>

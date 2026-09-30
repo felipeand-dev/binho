@@ -1,0 +1,16 @@
+{# Mensagens do Django exibidas como toasts; o app.js cuida da entrada e da saída. #}
+<div class="toasts" id="toasts" aria-live="polite">
+  {% for mensagem in messages %}
+    <div class="toast-msg {{ mensagem.tags }}" role="{% if 'erro' in mensagem.tags %}alert{% else %}status{% endif %}">
+      {% if 'erro' in mensagem.tags %}
+        <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+      {% elif 'aviso' in mensagem.tags %}
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+      {% else %}
+        <i class="bi bi-check2-circle" aria-hidden="true"></i>
+      {% endif %}
+      <p class="toast-texto">{{ mensagem }}</p>
+      <button type="button" class="toast-fechar" aria-label="Fechar mensagem"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,1732 @@
+/* ==========================================================================
+   Sorteio de Alunos — design system
+   --------------------------------------------------------------------------
+   Direção estética: "Palco" (docs/diretrizes-visuais.md).
+   - Gestão (turmas, importação, alunos, histórico): papel claro, calmo, alinhado à
+     esquerda, pouca decoração. Tipografia faz o trabalho.
+   - Sorteio: o único lugar ousado. Palco verde quase preto, holofote vindo de cima,
+     fita de nomes que gira como um tambor e revelação do nome em ouro.
+   - Hierarquia de raios: 24px para superfícies grandes, 16px para cartões, pílula
+     para botões e selos. Sombra só onde há elevação real.
+   - Movimento: só transform/opacity; 150–300ms com a curva das diretrizes; toda
+     animação tem versão para prefers-reduced-motion.
+   ========================================================================== */
+
+:root {
+  /* Paleta (diretrizes) */
+  --verde: #1F8A4C;
+  --verde-escuro: #176B3B;
+  --verde-claro: #E2F0E7;
+  --verde-luz: #7DDBA3;      /* verde legível sobre fundos escuros */
+  --ouro: #F5B83D;
+  --ouro-escuro: #C98D14;
+  --ouro-claro: #FCEFD2;
+  --ouro-hover: #FFC95C;
+  --palco: #0E1512;
+  --palco-elevado: #16211C;
+  --palco-linha: #26332C;
+  --papel: #F7F6F1;
+  --superficie: #FFFFFF;
+  --tinta: #17201B;
+  --tinta-suave: #4B5750;
+  --cinza: #8A948E;          /* só para texto sobre o palco escuro ou elementos grandes */
+  --cinza-texto: #66706A;    /* versão com contraste ≥ 4,5:1 sobre o papel */
+  --linha: #E3E1D8;
+  --perigo: #B3261E;
+  --perigo-claro: #FBEAE8;
+  --perigo-escuro: #8F1D17;
+  --perigo-toast: #5C1511;
+  --foco: var(--verde-escuro);
+
+  /* Tipografia (diretrizes) */
+  --fonte-display: 'Bricolage Grotesque', 'Figtree', sans-serif;
+  --fonte-texto: 'Figtree', system-ui, sans-serif;
+  --fonte-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --texto-xs: 0.8125rem;
+  --texto-sm: 0.9375rem;
+  --texto-base: 1.0625rem;
+  --texto-lg: 1.25rem;
+  --titulo-sm: 1.5rem;
+  --titulo: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  --titulo-lg: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem);
+
+  /* Espaçamento */
+  --esp-1: 0.25rem;
+  --esp-2: 0.5rem;
+  --esp-3: 0.75rem;
+  --esp-4: 1rem;
+  --esp-5: 1.5rem;
+  --esp-6: 2rem;
+  --esp-7: 3rem;
+  --esp-8: 4.5rem;
+
+  /* Forma */
+  --raio-sm: 10px;
+  --raio: 16px;
+  --raio-lg: 24px;
+  --raio-pilula: 999px;
+  --sombra: 0 1px 2px rgb(23 32 27 / 6%), 0 8px 24px -12px rgb(23 32 27 / 18%);
+  --sombra-alta: 0 2px 4px rgb(23 32 27 / 6%), 0 18px 40px -16px rgb(23 32 27 / 28%);
+
+  /* Movimento (diretrizes: 150–300ms, cubic-bezier(.2,.8,.2,1)) */
+  --easing: cubic-bezier(.2, .8, .2, 1);
+  --dur-rapida: 150ms;
+  --dur: 200ms;
+  --dur-lenta: 300ms;
+
+  /* Bootstrap com a identidade do projeto */
+  --bs-body-font-family: var(--fonte-texto);
+  --bs-body-font-size: var(--texto-base);
+  --bs-body-color: var(--tinta);
+  --bs-body-bg: var(--papel);
+  --bs-border-color: var(--linha);
+  --bs-border-radius: var(--raio-sm);
+  --bs-border-radius-lg: var(--raio);
+  --bs-primary: var(--verde);
+  --bs-primary-rgb: 31, 138, 76;
+  --bs-link-color: var(--verde-escuro);
+  --bs-link-color-rgb: 23, 107, 59;
+  --bs-link-hover-color: var(--tinta);
+  --bs-focus-ring-color: rgb(31 138 76 / 35%);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fonte-texto);
+  font-size: var(--texto-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: inherit;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--verde-escuro);
+  text-underline-offset: 0.18em;
+}
+
+::selection {
+  background: var(--ouro-claro);
+  color: var(--tinta);
+}
+
+input,
+textarea {
+  caret-color: var(--verde);
+}
+
+html {
+  scrollbar-color: color-mix(in srgb, var(--cinza) 55%, transparent) transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.matricula {
+  font-family: var(--fonte-mono);
+  font-size: 0.86em;
+  letter-spacing: 0.01em;
+  color: var(--tinta-suave);
+}
+
+.conteudo {
+  width: min(1200px, 100% - 2 * var(--esp-5));
+  margin-inline: auto;
+  padding-block: var(--esp-6) var(--esp-8);
+  flex: 1;
+}
+
+/* Some quando o JavaScript está ativo (botões de apoio para quem está sem JS). */
+.js .so-sem-js {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Cabeçalho
+   -------------------------------------------------------------------------- */
+
+.cabecalho {
+  border-bottom: 1px solid var(--linha);
+  background: var(--papel);
+}
+
+.cabecalho-interno {
+  width: min(1200px, 100% - 2 * var(--esp-5));
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-4);
+  padding-block: var(--esp-3);
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.marca-simbolo {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: none;
+}
+
+/* --------------------------------------------------------------------------
+   Botões
+   -------------------------------------------------------------------------- */
+
+.botao {
+  --botao-fundo: var(--superficie);
+  --botao-texto: var(--tinta);
+  --botao-borda: var(--linha);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--esp-2);
+  min-height: 2.75rem;
+  padding: 0.55rem 1.15rem;
+  border: 1px solid var(--botao-borda);
+  border-radius: var(--raio-pilula);
+  background: var(--botao-fundo);
+  color: var(--botao-texto);
+  font: 600 var(--texto-sm) / 1.2 var(--fonte-texto);
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform var(--dur-rapida) var(--easing),
+    background-color var(--dur) var(--easing),
+    border-color var(--dur) var(--easing),
+    color var(--dur) var(--easing);
+}
+
+.botao:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.botao:disabled,
+.botao[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.botao-primario {
+  --botao-fundo: var(--verde);
+  --botao-texto: #fff;
+  --botao-borda: var(--verde);
+}
+
+.botao-fantasma {
+  --botao-fundo: transparent;
+  --botao-borda: transparent;
+  --botao-texto: var(--tinta-suave);
+}
+
+.botao-perigo {
+  --botao-fundo: var(--superficie);
+  --botao-texto: var(--perigo);
+  --botao-borda: color-mix(in srgb, var(--perigo) 35%, transparent);
+}
+
+.botao-perigo-cheio {
+  --botao-fundo: var(--perigo);
+  --botao-texto: #fff;
+  --botao-borda: var(--perigo);
+}
+
+.botao-icone {
+  width: 2.75rem;
+  padding: 0;
+}
+
+.botao .bi {
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .botao:hover:not(:disabled) {
+    --botao-borda: var(--tinta-suave);
+  }
+
+  .botao-primario:hover:not(:disabled) {
+    --botao-fundo: var(--verde-escuro);
+    --botao-borda: var(--verde-escuro);
+  }
+
+  .botao-fantasma:hover:not(:disabled) {
+    --botao-fundo: rgb(23 32 27 / 6%);
+    --botao-borda: transparent;
+    --botao-texto: var(--tinta);
+  }
+
+  .botao-perigo:hover:not(:disabled) {
+    --botao-fundo: var(--perigo-claro);
+    --botao-borda: var(--perigo);
+  }
+
+  .botao-perigo-cheio:hover:not(:disabled) {
+    --botao-fundo: var(--perigo-escuro);
+    --botao-borda: var(--perigo-escuro);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Formulários
+   -------------------------------------------------------------------------- */
+
+.campo {
+  display: grid;
+  gap: var(--esp-2);
+}
+
+.campo + .campo {
+  margin-top: var(--esp-4);
+}
+
+.campo-rotulo {
+  font-weight: 600;
+  font-size: var(--texto-sm);
+}
+
+.campo-dica {
+  font-size: var(--texto-xs);
+  color: var(--tinta-suave);
+}
+
+.campo-erro {
+  font-size: var(--texto-sm);
+  color: var(--perigo);
+  font-weight: 600;
+}
+
+.entrada {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  transition: border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing);
+}
+
+.entrada::placeholder {
+  color: var(--cinza-texto);
+}
+
+.entrada:focus {
+  outline: none;
+  border-color: var(--verde);
+  box-shadow: 0 0 0 4px rgb(31 138 76 / 16%);
+}
+
+.entrada[aria-invalid='true'] {
+  border-color: var(--perigo);
+}
+
+textarea.entrada {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Cartões, selos e contadores
+   -------------------------------------------------------------------------- */
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: var(--esp-5);
+}
+
+.painel {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-lg);
+  padding: var(--esp-6);
+}
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--raio-pilula);
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.selo-disponivel {
+  background: var(--verde-claro);
+  color: var(--verde-escuro);
+}
+
+.selo-sorteado {
+  background: rgb(138 148 142 / 18%);
+  color: var(--tinta-suave);
+}
+
+.selo-rodada {
+  background: var(--ouro-claro);
+  color: #6B4A06;
+}
+
+.numero {
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* --------------------------------------------------------------------------
+   Toasts (mensagens do Django e do JavaScript)
+   -------------------------------------------------------------------------- */
+
+.toasts {
+  position: fixed;
+  right: var(--esp-4);
+  bottom: var(--esp-4);
+  z-index: 1090;
+  display: grid;
+  gap: var(--esp-2);
+  width: min(380px, calc(100vw - 2 * var(--esp-4)));
+  pointer-events: none;
+}
+
+.toast-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--esp-3);
+  padding: var(--esp-3) var(--esp-4);
+  border-radius: var(--raio);
+  background: var(--tinta);
+  color: #fff;
+  box-shadow: var(--sombra-alta);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+  transition:
+    opacity var(--dur-lenta) var(--easing),
+    transform var(--dur-lenta) var(--easing);
+}
+
+.toast-msg.visivel {
+  opacity: 1;
+  transform: none;
+}
+
+.toast-msg .bi {
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+.toast-msg.sucesso .bi { color: var(--verde-luz); }
+.toast-msg.erro { background: var(--perigo-toast); }
+.toast-msg.erro .bi { color: #FFB4AB; }
+.toast-msg.aviso .bi { color: var(--ouro); }
+
+.toast-texto {
+  flex: 1;
+  font-size: var(--texto-sm);
+  line-height: 1.45;
+}
+
+.toast-fechar {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: -0.4rem -0.6rem -0.4rem 0;
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: none;
+  color: inherit;
+  opacity: 0.75;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   Modal de confirmação (Bootstrap com a identidade do projeto)
+   -------------------------------------------------------------------------- */
+
+.modal-content {
+  border: 0;
+  border-radius: var(--raio-lg);
+  padding: var(--esp-3);
+  box-shadow: var(--sombra-alta);
+}
+
+.modal-title {
+  font-family: var(--fonte-display);
+  font-size: var(--titulo-sm);
+}
+
+.modal-body {
+  color: var(--tinta-suave);
+}
+
+.modal-footer {
+  border-top: 0;
+  gap: var(--esp-2);
+}
+
+.modal.fade .modal-dialog {
+  transform: scale(0.96);
+  transition: transform var(--dur-lenta) var(--easing);
+}
+
+.modal.show .modal-dialog {
+  transform: none;
+}
+
+.modal-backdrop.show {
+  opacity: 0.55;
+}
+
+/* --------------------------------------------------------------------------
+   Movimento reduzido: sem deslocamentos; só troca de opacidade/cor.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .botao:active:not(:disabled) {
+    transform: none;
+  }
+
+  .toast-msg {
+    transform: none;
+    transition: opacity var(--dur) ease;
+  }
+
+  .modal.fade .modal-dialog {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Tela de sorteio — o palco (tema escuro e teatral)
+   ========================================================================== */
+
+.tela-palco {
+  --texto-palco: #EEF2EF;
+  --texto-palco-suave: #A9B4AD;
+  --foco: var(--ouro);
+  background: var(--palco);
+  color: var(--texto-palco);
+}
+
+.tela-palco ::selection {
+  background: rgb(245 184 61 / 35%);
+  color: #fff;
+}
+
+.tela-palco .cabecalho {
+  background: var(--palco);
+  border-color: var(--palco-linha);
+}
+
+.tela-palco .marca {
+  color: var(--texto-palco);
+}
+
+.tela-palco .botao:not(.botao-primario, .botao-ouro, .botao-perigo-cheio) {
+  --botao-fundo: var(--palco-elevado);
+  --botao-texto: var(--texto-palco);
+  --botao-borda: var(--palco-linha);
+}
+
+.tela-palco .botao-fantasma {
+  --botao-fundo: transparent;
+  --botao-borda: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tela-palco .botao:not(.botao-primario, .botao-ouro, .botao-perigo-cheio):hover:not(:disabled) {
+    --botao-borda: var(--texto-palco-suave);
+  }
+}
+
+.tela-palco .selo-rodada {
+  background: rgb(245 184 61 / 14%);
+  color: var(--ouro);
+}
+
+.tela-palco kbd {
+  background: var(--palco-elevado);
+  border-color: var(--palco-linha);
+  color: var(--texto-palco);
+}
+
+.botao-ouro {
+  --botao-fundo: var(--ouro);
+  --botao-texto: var(--palco);
+  --botao-borda: var(--ouro);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .botao-ouro:hover:not(:disabled) {
+    --botao-fundo: var(--ouro-hover);
+    --botao-borda: var(--ouro-hover);
+  }
+}
+
+/* Layout: Disponíveis | palco | Já sorteados */
+.palco-layout {
+  --altura-palco: clamp(30rem, calc(100vh - 10rem), 48rem);
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.6fr) minmax(12rem, 1fr);
+  gap: var(--esp-4);
+  align-items: stretch;
+}
+
+.listas-alternar {
+  display: none;
+}
+
+.lista-lateral {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: var(--altura-palco);
+  padding: var(--esp-4);
+  border: 1px solid var(--palco-linha);
+  border-radius: var(--raio-lg);
+}
+
+.lista-lateral-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-2);
+  padding: 0 var(--esp-2) var(--esp-3);
+  border-bottom: 1px solid var(--palco-linha);
+}
+
+.lista-lateral h2 {
+  font-size: var(--texto-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.lista-contador {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+[data-lista='disponiveis'] .lista-contador {
+  color: var(--verde-luz);
+}
+
+[data-lista='sorteados'] .lista-contador {
+  color: var(--ouro);
+}
+
+.lista-nomes {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: var(--esp-2) 0 0;
+  padding: 0;
+  list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--palco-linha) transparent;
+}
+
+.item-aluno {
+  display: flex;
+  align-items: baseline;
+  gap: var(--esp-2);
+  padding: 0.4rem var(--esp-2);
+  border-radius: var(--raio-sm);
+  font-size: var(--texto-sm);
+  line-height: 1.35;
+}
+
+.item-sorteado {
+  color: var(--cinza);
+}
+
+.item-aluno-ordem {
+  min-width: 2.2rem;
+  color: var(--ouro);
+  font-size: var(--texto-sm);
+  opacity: 0.85;
+}
+
+.item-aluno.recente {
+  background: rgb(245 184 61 / 10%);
+  color: var(--texto-palco);
+}
+
+.lista-vazia {
+  display: none;
+  padding: var(--esp-4) var(--esp-2);
+  color: var(--texto-palco-suave);
+  font-size: var(--texto-sm);
+}
+
+.lista-nomes:not(:has(li)) + .lista-vazia {
+  display: block;
+}
+
+/* O palco */
+.palco {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: var(--esp-5);
+  min-height: var(--altura-palco);
+  padding: var(--esp-6) var(--esp-5) var(--esp-5);
+  border-radius: var(--raio-lg);
+  background: linear-gradient(180deg, #121B17 0%, #0B110E 100%);
+  border: 1px solid var(--palco-linha);
+  overflow: hidden;
+}
+
+.palco-holofote {
+  position: absolute;
+  inset: -20% -10% 20%;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 45% 60% at 50% 0%, rgb(255 236 190 / 22%), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 55%, rgb(31 138 76 / 16%), transparent 70%);
+  opacity: 0.75;
+  transition: opacity var(--dur-lenta) var(--easing);
+  pointer-events: none;
+}
+
+[data-estado='sorteando'] .palco-holofote {
+  opacity: 1;
+}
+
+.palco-cena {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 16rem;
+}
+
+/* Fita de nomes (a roleta) */
+.roleta {
+  --altura-item: clamp(3.25rem, 2rem + 4vw, 5.75rem);
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: calc(var(--altura-item) * 5);
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-estado='sorteando'] .roleta {
+  opacity: 1;
+}
+
+.roleta-janela {
+  height: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(transparent 0%, #000 32%, #000 68%, transparent 100%);
+  mask-image: linear-gradient(transparent 0%, #000 32%, #000 68%, transparent 100%);
+}
+
+.roleta-fita {
+  position: relative;
+  height: 100%;
+}
+
+.fita-item {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: var(--altura-item);
+  margin-top: calc(var(--altura-item) / -2);
+  padding-inline: var(--esp-6);
+  overflow: hidden;
+  text-align: center;
+  line-height: var(--altura-item);
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-size: calc(var(--altura-item) * 0.44);
+  font-variation-settings: 'wdth' 85;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--texto-palco);
+  will-change: transform, opacity;
+}
+
+.roleta-linha {
+  position: absolute;
+  inset-inline: 10%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--ouro) 20%, var(--ouro) 80%, transparent);
+  box-shadow: 0 0 18px rgb(245 184 61 / 55%);
+}
+
+.roleta-linha-topo {
+  top: calc(50% - var(--altura-item) / 2);
+}
+
+.roleta-linha-base {
+  top: calc(50% + var(--altura-item) / 2);
+}
+
+/* Revelação do nome sorteado */
+.revelacao {
+  display: grid;
+  justify-items: center;
+  gap: var(--esp-3);
+  text-align: center;
+  transition: opacity var(--dur) var(--easing);
+}
+
+[data-estado='sorteando'] .revelacao {
+  opacity: 0;
+}
+
+.revelacao-ordem {
+  font-size: var(--texto-lg);
+  font-weight: 600;
+  color: var(--ouro);
+  font-variant-numeric: tabular-nums;
+}
+
+.revelacao-nome {
+  max-width: 18ch;
+  font-family: var(--fonte-display);
+  font-weight: 800;
+  font-size: clamp(2.25rem, 1rem + 4.6vw, 5.75rem);
+  font-variation-settings: 'wdth' 82;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: #fff;
+  font-kerning: none;
+}
+
+.revelacao-convite {
+  color: rgb(238 242 239 / 32%);
+}
+
+.revelacao.vencedor .revelacao-nome {
+  color: var(--ouro);
+  text-shadow: 0 0 48px rgb(245 184 61 / 35%);
+}
+
+/* Estados do palco */
+.palco-estado {
+  display: none;
+  justify-items: center;
+  gap: var(--esp-3);
+  text-align: center;
+  color: var(--texto-palco-suave);
+}
+
+.palco-estado-titulo {
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-size: var(--titulo-sm);
+  color: var(--texto-palco);
+}
+
+[data-estado='vazio'] .palco-estado-vazio,
+[data-estado='completo'] .palco-estado-completo {
+  display: grid;
+}
+
+[data-estado='vazio'] .revelacao {
+  display: none;
+}
+
+[data-estado='completo'] .palco-cena {
+  align-content: center;
+  gap: var(--esp-6);
+}
+
+[data-estado='completo'] .revelacao-nome {
+  font-size: clamp(1.75rem, 1rem + 2.6vw, 3.25rem);
+}
+
+@media (max-width: 960px) {
+  .palco-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .palco {
+    order: -2;
+    min-height: 26rem;
+  }
+
+  .listas-alternar {
+    order: -1;
+    display: flex;
+    gap: var(--esp-2);
+  }
+
+  .listas-alternar-botao {
+    flex: 1;
+    display: inline-flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: var(--esp-2);
+    padding: var(--esp-3);
+    border: 1px solid var(--palco-linha);
+    border-radius: var(--raio-pilula);
+    background: transparent;
+    color: var(--texto-palco-suave);
+    font-weight: 600;
+  }
+
+  .listas-alternar-botao[aria-pressed='true'] {
+    background: var(--palco-elevado);
+    color: var(--texto-palco);
+    border-color: var(--texto-palco-suave);
+  }
+
+  .lista-lateral {
+    max-height: 26rem;
+  }
+
+  .palco-layout:not([data-lista-ativa='sorteados']) [data-lista='sorteados'],
+  .palco-layout[data-lista-ativa='sorteados'] [data-lista='disponiveis'] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palco-holofote,
+  .revelacao {
+    transition: opacity var(--dur) ease;
+  }
+}
+
+/* Botão principal e ações do palco */
+.palco-acoes {
+  display: grid;
+  justify-items: center;
+  gap: var(--esp-3);
+}
+
+.botao-sortear {
+  min-width: min(100%, 17rem);
+  min-height: 4.75rem;
+  padding: 0 var(--esp-7);
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: var(--ouro);
+  color: var(--palco);
+  font-family: var(--fonte-display);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.25rem);
+  font-variation-settings: 'wdth' 90;
+  letter-spacing: -0.02em;
+  box-shadow: 0 14px 40px -14px rgb(245 184 61 / 65%), inset 0 -3px 0 rgb(0 0 0 / 12%);
+  cursor: pointer;
+  transition:
+    transform var(--dur-rapida) var(--easing),
+    background-color var(--dur) var(--easing),
+    box-shadow var(--dur) var(--easing),
+    opacity var(--dur) var(--easing);
+}
+
+.botao-sortear:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.botao-sortear:disabled {
+  cursor: not-allowed;
+  background: var(--palco-linha);
+  color: var(--texto-palco-suave);
+  box-shadow: none;
+}
+
+[data-estado='sorteando'] .botao-sortear:disabled,
+[data-ocupado] .botao-sortear:disabled {
+  background: var(--ouro);
+  color: var(--palco);
+  opacity: 0.8;
+  cursor: progress;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .botao-sortear:hover:not(:disabled) {
+    background: var(--ouro-hover);
+  }
+}
+
+.palco-mensagem {
+  display: none;
+  max-width: 44ch;
+  text-align: center;
+  color: var(--texto-palco-suave);
+  font-size: var(--texto-sm);
+}
+
+[data-estado='completo'] .palco-mensagem-completo,
+[data-estado='vazio'] .palco-mensagem-vazio {
+  display: block;
+}
+
+/* Cópia do item que voa de "Disponíveis" para "Já sorteados" */
+.item-voando {
+  position: fixed;
+  z-index: 1070;
+  margin: 0;
+  list-style: none;
+  pointer-events: none;
+  background: rgb(245 184 61 / 20%);
+  color: #fff;
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .botao-sortear:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+.palco-topo {
+  position: absolute;
+  top: var(--esp-4);
+  inset-inline: var(--esp-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--esp-2);
+  z-index: 1;
+}
+
+.palco {
+  padding-top: var(--esp-8);
+}
+
+.palco-secundarias {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--esp-2);
+}
+
+/* Turma completa: o botão principal dá lugar ao "Reiniciar sorteio". */
+[data-estado='completo'] #form-sortear {
+  display: none;
+}
+
+[data-estado='completo'] #form-reiniciar .botao {
+  --botao-fundo: var(--ouro);
+  --botao-texto: var(--palco);
+  --botao-borda: var(--ouro);
+  min-height: 4rem;
+  padding-inline: var(--esp-6);
+  font-size: var(--texto-lg);
+}
+
+/* ==========================================================================
+   Modo apresentação (projetor): só o palco e o botão, nomes gigantes
+   ========================================================================== */
+
+.palco-turma-nome {
+  display: none;
+  font-family: var(--fonte-display);
+  font-weight: 600;
+  color: var(--texto-palco-suave);
+}
+
+.palco-atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--esp-1) var(--esp-2);
+  color: var(--texto-palco-suave);
+  font-size: var(--texto-xs);
+}
+
+.palco-atalhos kbd:not(:first-child) {
+  margin-left: var(--esp-3);
+}
+
+@media (hover: none) {
+  .palco-atalhos {
+    display: none;
+  }
+}
+
+.modo-apresentacao .cabecalho,
+.modo-apresentacao .lista-lateral,
+.modo-apresentacao .listas-alternar,
+.modo-apresentacao .palco-atalhos {
+  display: none;
+}
+
+.modo-apresentacao .conteudo {
+  width: 100%;
+  padding: 0;
+}
+
+.modo-apresentacao .palco-layout {
+  grid-template-columns: 1fr;
+}
+
+.modo-apresentacao .palco {
+  --altura-palco: 100vh;
+  min-height: 100vh;
+  border: 0;
+  border-radius: 0;
+  padding: var(--esp-8) var(--esp-6) var(--esp-6);
+}
+
+.modo-apresentacao .palco-turma-nome {
+  display: block;
+  font-size: var(--texto-lg);
+}
+
+.modo-apresentacao .roleta {
+  --altura-item: clamp(5rem, 11vh, 9rem);
+}
+
+.modo-apresentacao .revelacao-ordem {
+  font-size: clamp(1.25rem, 0.8rem + 1.4vw, 2.25rem);
+}
+
+.modo-apresentacao .revelacao-nome {
+  max-width: 14ch;
+  font-size: clamp(3rem, 1rem + 8vw, 12vw);
+}
+
+.modo-apresentacao [data-estado='completo'] .revelacao-nome {
+  font-size: clamp(2.25rem, 1rem + 4vw, 6vw);
+}
+
+.modo-apresentacao .botao-sortear {
+  min-height: 5.5rem;
+  min-width: 22rem;
+  font-size: clamp(2rem, 1.4rem + 1.6vw, 3rem);
+}
+
+@media (max-width: 480px) {
+  .conteudo {
+    padding-top: var(--esp-5);
+  }
+}
+
+/* ==========================================================================
+   Cabeçalho: ações da lista (Adicionar nomes, Limpar lista)
+   ========================================================================== */
+
+.cabecalho-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--esp-2);
+}
+
+/* ==========================================================================
+   Campo de colar nomes (modal "Adicionar nomes")
+   ========================================================================== */
+
+.colar-grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--esp-5);
+  align-items: start;
+}
+
+.colar-campo .campo-rotulo {
+  color: var(--texto-palco);
+}
+
+.tela-palco .campo-dica {
+  color: var(--texto-palco-suave);
+}
+
+.tela-palco .entrada {
+  background: rgb(0 0 0 / 28%);
+  border-color: var(--palco-linha);
+  color: var(--texto-palco);
+}
+
+.tela-palco .entrada::placeholder {
+  color: var(--cinza);
+}
+
+.tela-palco .entrada:focus {
+  border-color: var(--ouro);
+  box-shadow: 0 0 0 4px rgb(245 184 61 / 18%);
+}
+
+.entrada-lista {
+  min-height: 17rem;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-sm);
+  line-height: 1.55;
+}
+
+.como-copiar {
+  margin-top: var(--esp-4);
+  padding: var(--esp-3) var(--esp-4);
+  border: 1px solid var(--palco-linha);
+  border-radius: var(--raio-sm);
+  font-size: var(--texto-sm);
+}
+
+.como-copiar summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--ouro);
+}
+
+.como-copiar ol {
+  margin: var(--esp-3) 0 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--esp-1);
+  color: var(--texto-palco-suave);
+}
+
+kbd {
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--palco-linha);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--palco-elevado);
+  color: var(--texto-palco);
+  font-family: var(--fonte-mono);
+  font-size: 0.8em;
+}
+
+/* Prévia da lista */
+.colar-previa {
+  display: grid;
+  gap: var(--esp-3);
+  padding: var(--esp-4) var(--esp-5);
+  border: 1px solid var(--palco-linha);
+  border-radius: var(--raio);
+  background: rgb(0 0 0 / 22%);
+}
+
+.previa-resumo {
+  display: grid;
+  gap: var(--esp-1);
+}
+
+.previa-total {
+  font-size: var(--texto-lg);
+  color: var(--texto-palco-suave);
+}
+
+.previa-total .numero {
+  font-size: 2.75rem;
+  line-height: 1;
+  color: var(--ouro);
+  margin-right: var(--esp-1);
+}
+
+.previa-detalhe {
+  font-size: var(--texto-sm);
+  color: var(--texto-palco-suave);
+}
+
+.previa-aviso {
+  font-size: var(--texto-sm);
+  color: var(--texto-palco-suave);
+}
+
+.previa-aviso[data-tipo='vazio'] {
+  color: #FFB4AB;
+  font-weight: 600;
+}
+
+.previa-lista {
+  max-height: 15rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: previa;
+  border-top: 1px solid var(--palco-linha);
+  scrollbar-width: thin;
+  scrollbar-color: var(--palco-linha) transparent;
+}
+
+.previa-lista:not(:has(li)) {
+  display: none;
+}
+
+.previa-lista li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--esp-3);
+  padding: var(--esp-1) 0;
+  border-bottom: 1px solid rgb(38 51 44 / 60%);
+  counter-increment: previa;
+  font-size: var(--texto-sm);
+  color: var(--texto-palco);
+}
+
+.previa-lista li::before {
+  content: counter(previa);
+  min-width: 1.75rem;
+  color: var(--cinza);
+  font-variant-numeric: tabular-nums;
+}
+
+.previa-nome {
+  flex: 1;
+}
+
+.previa-lista .duplicado {
+  color: var(--cinza);
+}
+
+.tela-palco .selo-sorteado {
+  background: rgb(138 148 142 / 18%);
+  color: var(--texto-palco-suave);
+}
+
+.colar-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--esp-5);
+}
+
+.botao-grande {
+  min-height: 3.5rem;
+  padding-inline: var(--esp-6);
+  font-size: var(--texto-lg);
+  font-family: var(--fonte-display);
+  font-weight: 700;
+}
+
+/* Modal "Adicionar nomes" no tema do palco */
+.modal-escuro {
+  background: var(--palco-elevado);
+  color: var(--texto-palco);
+  border: 1px solid var(--palco-linha);
+}
+
+.modal-escuro .modal-title {
+  color: #fff;
+}
+
+.modal-explicacao {
+  margin-bottom: var(--esp-4);
+  color: var(--texto-palco-suave);
+}
+
+.modal-escuro .colar-grade {
+  grid-template-columns: 1fr 1fr;
+}
+
+.modal-escuro .entrada-lista {
+  min-height: 12rem;
+}
+
+/* O modal de confirmação também fica no tema escuro */
+.tela-palco #modal-confirmacao .modal-content {
+  background: var(--palco-elevado);
+  color: var(--texto-palco);
+  border: 1px solid var(--palco-linha);
+}
+
+.tela-palco #modal-confirmacao .modal-body {
+  color: var(--texto-palco-suave);
+}
+
+@media (max-width: 860px) {
+  .colar-grade,
+  .modal-escuro .colar-grade {
+    grid-template-columns: 1fr;
+  }
+
+  .colar-acoes .botao {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Tela de abertura (sem lista) — tudo centralizado, letreiro de ensaio
+   ========================================================================== */
+
+.tela-abertura .cabecalho {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+
+.tela-abertura .cabecalho-interno {
+  justify-content: center;
+  padding-block: var(--esp-3) 0;
+}
+
+.tela-abertura .conteudo {
+  padding-block: var(--esp-4) var(--esp-5);
+}
+
+.tela-abertura .cabecalho-acoes:empty {
+  display: none;
+}
+
+.abertura {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--esp-4);
+  min-height: auto;
+  padding: var(--esp-2) 0 var(--esp-4);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+  text-align: center;
+}
+
+/* Holofote: um cone de luz quente vindo de cima, centrado no título. */
+.abertura-holofote {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 34% 58% at 50% -6%, rgb(255 232 180 / 20%), transparent 72%),
+    radial-gradient(ellipse 60% 40% at 50% 38%, rgb(31 138 76 / 14%), transparent 70%);
+  opacity: 1;
+}
+
+.abertura-form {
+  display: grid;
+  justify-items: center;
+  gap: var(--esp-4);
+  width: min(46rem, 100%);
+}
+
+.abertura-titulo {
+  max-width: 22ch;
+  margin-bottom: var(--esp-2);
+  font-size: clamp(2.4rem, 1.4rem + 3vw, 3.75rem);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 80;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  color: #fff;
+}
+
+/* Letreiro de ensaio: miniatura da roleta do palco */
+.ensaio {
+  --altura-linha: clamp(2.3rem, 1.9rem + 1vw, 2.75rem);
+  position: relative;
+  width: min(34rem, 100%);
+  height: calc(var(--altura-linha) * 3);
+  border: 1px solid var(--palco-linha);
+  border-radius: var(--raio-lg);
+  background: linear-gradient(180deg, rgb(0 0 0 / 34%), rgb(0 0 0 / 18%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%), 0 24px 60px -30px rgb(0 0 0 / 80%);
+}
+
+.ensaio-janela {
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  -webkit-mask-image: linear-gradient(transparent 0%, #000 34%, #000 66%, transparent 100%);
+  mask-image: linear-gradient(transparent 0%, #000 34%, #000 66%, transparent 100%);
+}
+
+.ensaio-fita {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  will-change: transform;
+}
+
+.ensaio-fita li {
+  height: var(--altura-linha);
+  padding-inline: var(--esp-6);
+  overflow: hidden;
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-size: calc(var(--altura-linha) * 0.46);
+  font-variation-settings: 'wdth' 85;
+  line-height: var(--altura-linha);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--texto-palco);
+}
+
+.ensaio-linha {
+  position: absolute;
+  inset-inline: 14%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro) 22%, var(--ouro) 78%, transparent);
+  box-shadow: 0 0 14px rgb(245 184 61 / 55%);
+  pointer-events: none;
+}
+
+.ensaio-linha-topo {
+  top: var(--altura-linha);
+}
+
+.ensaio-linha-base {
+  top: calc(var(--altura-linha) * 2);
+}
+
+/* Contagem */
+.abertura-contagem {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  min-height: 4.75rem;
+}
+
+.contagem {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--esp-2);
+}
+
+.contagem-numero {
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--texto-palco-suave);
+  transition: color var(--dur) var(--easing);
+}
+
+.contagem[data-estado='pronto'] .contagem-numero {
+  color: var(--ouro);
+}
+
+.contagem[data-estado='erro'] .contagem-numero {
+  color: #FFB4AB;
+}
+
+.contagem-texto {
+  font-size: var(--texto-lg);
+  color: var(--texto-palco-suave);
+}
+
+.abertura-contagem .previa-aviso {
+  max-width: 44ch;
+}
+
+.abertura-nomes {
+  font-size: var(--texto-sm);
+}
+
+.abertura-nomes summary {
+  color: var(--ouro);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.abertura-nomes:not(:has(li)) {
+  display: none;
+}
+
+.abertura-lista {
+  margin-top: var(--esp-3);
+  columns: 2 14rem;
+  column-gap: var(--esp-6);
+  max-height: 16rem;
+  padding: var(--esp-3) var(--esp-4);
+  border: 1px solid var(--palco-linha);
+  border-radius: var(--raio);
+  background: rgb(0 0 0 / 22%);
+  text-align: left;
+}
+
+.abertura-lista li {
+  break-inside: avoid;
+}
+
+/* Campo */
+.abertura-campo {
+  width: 100%;
+  height: 8.5rem;
+  min-height: 6rem;
+  padding: var(--esp-4) var(--esp-5);
+  border: 1px solid var(--palco-linha);
+  border-radius: var(--raio-lg);
+  background: rgb(0 0 0 / 32%);
+  color: var(--texto-palco);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-sm);
+  line-height: 1.6;
+  text-align: left;
+  resize: vertical;
+  transition: border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing);
+}
+
+.abertura-campo::placeholder {
+  color: var(--cinza);
+  text-align: center;
+  font-family: var(--fonte-texto);
+  font-size: var(--texto-base);
+  line-height: 1.7;
+}
+
+.abertura-campo:placeholder-shown {
+  padding-top: var(--esp-5);
+}
+
+.abertura-campo:focus {
+  outline: none;
+  border-color: var(--ouro);
+  box-shadow: 0 0 0 4px rgb(245 184 61 / 16%);
+}
+
+/* Passos (é de fato uma sequência) */
+.abertura-passos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--esp-2) var(--esp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--texto-sm);
+  color: var(--texto-palco-suave);
+}
+
+.abertura-passos li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+}
+
+.passo-numero {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  border: 1px solid rgb(245 184 61 / 55%);
+  border-radius: 50%;
+  color: var(--ouro);
+  font-size: var(--texto-xs);
+  font-weight: 700;
+}
+
+.abertura-passos kbd {
+  font-size: 0.75em;
+}
+
+/* Botão principal */
+.abertura-comecar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--esp-3);
+  margin-top: var(--esp-1);
+}
+
+.abertura-comecar .bi {
+  font-size: 0.8em;
+}
+
+.abertura-atalho {
+  margin-top: calc(-1 * var(--esp-3));
+  font-size: var(--texto-xs);
+  color: var(--cinza);
+}
+
+@media (hover: none) {
+  .abertura-atalho {
+    display: none;
+  }
+}
+
+.abertura-garantia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  max-width: 46rem;
+  margin-top: var(--esp-1);
+  font-size: var(--texto-sm);
+  color: var(--texto-palco-suave);
+}
+
+.abertura-garantia .bi {
+  color: var(--verde-luz);
+  font-size: 1.1em;
+}
+
+@media (max-width: 600px) {
+  .abertura {
+    gap: var(--esp-5);
+  }
+
+  .abertura-passos {
+    display: grid;
+    justify-content: center;
+    justify-items: start;
+  }
+
+  .abertura-comecar {
+    width: 100%;
+  }
+
+  .abertura-garantia {
+    display: block;
+    text-align: center;
+  }
+}

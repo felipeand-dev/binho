@@ -1,0 +1,17 @@
+{# Modal único de confirmação. Formulários com data-confirmar passam por ele (app.js). #}
+<div class="modal fade" id="modal-confirmacao" tabindex="-1" aria-labelledby="modal-confirmacao-titulo" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h2 class="modal-title" id="modal-confirmacao-titulo">Tem certeza?</h2>
+      </div>
+      <div class="modal-body">
+        <p id="modal-confirmacao-texto"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="botao botao-fantasma" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="botao botao-perigo-cheio" id="modal-confirmacao-botao">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>

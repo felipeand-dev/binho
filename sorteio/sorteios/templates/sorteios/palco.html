@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sorteio{% endblock %}
+{% block classe_body %}{% if not sorteio.tem_lista %}tela-abertura{% endif %}{% endblock %}
+{% block scripts %}<script defer src="{% static 'js/roleta.js' %}"></script>{% endblock %}
+
+{% block cabecalho_acoes %}
+  {% if sorteio.tem_lista %}
+    <button type="button" class="botao" data-bs-toggle="modal" data-bs-target="#modal-adicionar">
+      <i class="bi bi-person-plus" aria-hidden="true"></i> Adicionar nomes
+    </button>
+    <form method="post" action="{% url 'sorteios:limpar' %}"
+          data-confirmar="Os nomes, os sorteados e a rodada serão apagados. Você poderá colar uma nova lista."
+          data-confirmar-titulo="Limpar a lista?"
+          data-confirmar-botao="Limpar lista">
+      {% csrf_token %}
+      <input type="hidden" name="versao" value="{{ sorteio.versao }}">
+      <button type="submit" class="botao botao-fantasma">
+        <i class="bi bi-eraser" aria-hidden="true"></i> Limpar lista
+      </button>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block conteudo %}
+  {% if not sorteio.tem_lista %}
+    {# Sem lista: tela de abertura para colar os nomes (FR-001). #}
+    {% include 'sorteios/_inicio.html' with valor=form.texto.value %}
+  {% else %}
+    <section id="palco" class="palco-layout"
+             data-url-sortear="{% url 'sorteios:sortear' %}"
+             data-url-desfazer="{% url 'sorteios:desfazer' %}"
+             data-versao="{{ sorteio.versao }}"
+             data-estado="{% if not total_disponiveis %}completo{% else %}pronto{% endif %}"
+             aria-label="Sorteio">
+
+      <nav class="listas-alternar" aria-label="Listas de alunos">
+        <button type="button" class="listas-alternar-botao" data-mostrar-lista="disponiveis" aria-pressed="true">
+          Disponíveis <span class="numero" data-contador="disponiveis">{{ total_disponiveis }}</span>
+        </button>
+        <button type="button" class="listas-alternar-botao" data-mostrar-lista="sorteados" aria-pressed="false">
+          Já sorteados <span class="numero" data-contador="sorteados">{{ total_sorteados }}</span>
+        </button>
+      </nav>
+
+      <aside class="lista-lateral" data-lista="disponiveis" aria-labelledby="titulo-disponiveis">
+        <header class="lista-lateral-topo">
+          <h2 id="titulo-disponiveis">Disponíveis</h2>
+          <span class="numero lista-contador" data-contador="disponiveis">{{ total_disponiveis }}</span>
+        </header>
+        <ol class="lista-nomes" id="lista-disponiveis">
+          {% for id, nome in disponiveis %}
+            <li class="item-aluno" data-aluno-id="{{ id }}" data-nome="{{ nome }}">
+              <span class="item-aluno-nome">{{ nome }}</span>
+            </li>
+          {% endfor %}
+        </ol>
+        <p class="lista-vazia">Ninguém disponível nesta rodada.</p>
+      </aside>
+
+      <div class="palco" id="palco-central">
+        <div class="palco-holofote" aria-hidden="true"></div>
+        <div class="palco-topo">
+          <span class="selo selo-rodada">Rodada {{ sorteio.rodada }}</span>
+          <button type="button" class="botao botao-fantasma botao-icone" id="botao-apresentacao"
+                  aria-label="Modo apresentação (tela cheia)" title="Modo apresentação (F)" aria-pressed="false">
+            <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="palco-cena">
+          <div class="roleta" id="roleta" aria-hidden="true">
+            <div class="roleta-janela"><div class="roleta-fita" id="roleta-fita"></div></div>
+            <span class="roleta-linha roleta-linha-topo"></span>
+            <span class="roleta-linha roleta-linha-base"></span>
+          </div>
+
+          <div class="revelacao" id="revelacao">
+            {% if ultimo %}
+              <p class="revelacao-ordem" id="revelacao-ordem">{{ ultimo.0 }}º sorteado</p>
+              <p class="revelacao-nome" id="revelacao-nome">{{ ultimo.2 }}</p>
+            {% else %}
+              <p class="revelacao-ordem" id="revelacao-ordem">{{ total_disponiveis }} nome{{ total_disponiveis|pluralize }} na disputa</p>
+              <p class="revelacao-nome revelacao-convite" id="revelacao-nome">Quem será?</p>
+            {% endif %}
+          </div>
+
+          <div class="palco-estado palco-estado-completo">
+            <p class="palco-estado-titulo">Turma completa! 🎉</p>
+          </div>
+        </div>
+
+        <div class="palco-acoes">
+          <form method="post" action="{% url 'sorteios:sortear' %}" id="form-sortear">
+            {% csrf_token %}
+            <input type="hidden" name="versao" value="{{ sorteio.versao }}">
+            <button type="submit" class="botao-sortear" id="botao-sortear"
+                    {% if not total_disponiveis %}disabled{% endif %}>
+              <span class="botao-sortear-texto">Sortear</span>
+            </button>
+          </form>
+          <div class="palco-secundarias">
+            <form method="post" action="{% url 'sorteios:desfazer' %}" id="form-desfazer">
+              {% csrf_token %}
+              <input type="hidden" name="versao" value="{{ sorteio.versao }}">
+              <button type="submit" class="botao botao-fantasma" data-requer-sorteados
+                      title="Devolve o último sorteado para os disponíveis (ex.: aluno ausente)"
+                      {% if not total_sorteados %}disabled{% endif %}>
+                <i class="bi bi-arrow-return-left" aria-hidden="true"></i> Desfazer último
+              </button>
+            </form>
+            <form method="post" action="{% url 'sorteios:reiniciar' %}" id="form-reiniciar"
+                  data-confirmar="Todos os nomes voltam para os disponíveis e começa a rodada {{ sorteio.rodada|add:1 }}."
+                  data-confirmar-titulo="Reiniciar o sorteio?"
+                  data-confirmar-botao="Reiniciar sorteio">
+              {% csrf_token %}
+              <input type="hidden" name="versao" value="{{ sorteio.versao }}">
+              <button type="submit" class="botao" data-requer-sorteados {% if not total_sorteados %}disabled{% endif %}>
+                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Reiniciar sorteio
+              </button>
+            </form>
+          </div>
+          <p class="palco-atalhos" aria-hidden="true">
+            <kbd>Espaço</kbd> sortear <kbd>F</kbd> tela cheia <kbd>Z</kbd> desfazer
+          </p>
+          <p class="palco-mensagem palco-mensagem-completo">Todos os alunos já foram sorteados. Reinicie o sorteio.</p>
+        </div>
+
+        <p class="sr-only" id="anuncio" aria-live="polite"></p>
+      </div>
+
+      <aside class="lista-lateral" data-lista="sorteados" aria-labelledby="titulo-sorteados">
+        <header class="lista-lateral-topo">
+          <h2 id="titulo-sorteados">Já sorteados</h2>
+          <span class="numero lista-contador" data-contador="sorteados">{{ total_sorteados }}</span>
+        </header>
+        <ol class="lista-nomes" id="lista-sorteados">
+          {% for ordem, id, nome in sorteados %}
+            <li class="item-aluno item-sorteado" data-aluno-id="{{ id }}" data-nome="{{ nome }}">
+              <span class="item-aluno-ordem numero">{{ ordem }}º</span>
+              <span class="item-aluno-nome">{{ nome }}</span>
+            </li>
+          {% endfor %}
+        </ol>
+        <p class="lista-vazia">Ninguém sorteado ainda.</p>
+      </aside>
+    </section>
+
+    {# Adicionar nomes com a lista em uso (FR-008). #}
+    <div class="modal fade" id="modal-adicionar" tabindex="-1" aria-labelledby="modal-adicionar-titulo" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-escuro">
+          <div class="modal-header border-0 pb-0">
+            <h2 class="modal-title" id="modal-adicionar-titulo">Adicionar nomes</h2>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <p class="modal-explicacao">Quem já está na lista é reconhecido e não entra de novo. Os novos entram como disponíveis.</p>
+            {% url 'sorteios:adicionar' as url_adicionar %}
+            {% include 'sorteios/_colar_nomes.html' with id='colar-adicionar' acao=url_adicionar botao='Adicionar à lista' icone='person-plus' com_versao=True %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

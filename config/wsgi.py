@@ -1,0 +1,10 @@
+"""Ponto de entrada WSGI do projeto (também usado pela Vercel)."""
+import os
+
+from django.core.wsgi import get_wsgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+application = get_wsgi_application()
+
+# A Vercel procura uma variável chamada `app`.
+app = application

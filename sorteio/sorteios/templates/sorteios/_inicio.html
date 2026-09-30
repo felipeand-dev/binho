@@ -1,0 +1,57 @@
+{% comment %}
+Tela de abertura (sem lista): tudo centralizado dentro do palco.
+O letreiro de ensaio é uma miniatura da roleta; os nomes de exemplo são fictícios.
+{% endcomment %}
+<section class="palco abertura" aria-labelledby="abertura-titulo">
+  <div class="palco-holofote abertura-holofote" aria-hidden="true"></div>
+
+  <form method="post" action="{% url 'sorteios:iniciar' %}" class="abertura-form" id="form-abertura">
+    {% csrf_token %}
+
+    <h1 class="abertura-titulo" id="abertura-titulo">Quem vai ser sorteado hoje?</h1>
+
+    <div class="ensaio" id="ensaio" aria-hidden="true"
+         data-nomes-exemplo="Ana Beatriz Souza|Bruno Alves|Carla Mendes|Davi Oliveira|Elisa Rocha|Fábio Nunes|Gabriela Lima|Heitor Santos">
+      <div class="ensaio-janela">
+        <ol class="ensaio-fita"></ol>
+      </div>
+      <span class="ensaio-linha ensaio-linha-topo"></span>
+      <span class="ensaio-linha ensaio-linha-base"></span>
+    </div>
+
+    <div class="abertura-contagem" id="abertura-previa" aria-live="polite">
+      <p class="contagem" data-estado="vazio">
+        <span class="contagem-numero numero" data-previa="encontrados">0</span>
+        <span class="contagem-texto" data-previa="rotulo">nomes prontos</span>
+      </p>
+      <p class="previa-aviso" data-previa="aviso">Cole a lista abaixo para ver os nomes aqui.</p>
+      <details class="abertura-nomes">
+        <summary>Ver os nomes</summary>
+        <ol class="previa-lista abertura-lista" data-previa="lista"></ol>
+      </details>
+    </div>
+
+    <label class="sr-only" for="colar-inicio">Nomes dos alunos</label>
+    <textarea name="texto" id="colar-inicio" rows="7" spellcheck="false" class="abertura-campo"
+              placeholder="Cole aqui a lista copiada do SUAP&#10;ou digite um nome por linha"
+              data-url-previa="{% url 'sorteios:previa' %}" data-previa-alvo="#abertura-previa"
+              aria-describedby="abertura-passos abertura-garantia">{% if valor %}{{ valor }}{% endif %}</textarea>
+
+    <ol class="abertura-passos" id="abertura-passos">
+      <li><span class="passo-numero" aria-hidden="true">1</span> Copie a lista de alunos no SUAP</li>
+      <li><span class="passo-numero" aria-hidden="true">2</span> Cole no campo acima</li>
+      <li><span class="passo-numero" aria-hidden="true">3</span> Comece o sorteio</li>
+    </ol>
+
+    <button type="submit" class="botao-sortear abertura-comecar" id="abertura-comecar">
+      <i class="bi bi-play-fill" aria-hidden="true"></i>
+      <span>Começar o sorteio</span>
+    </button>
+    <p class="abertura-atalho" aria-hidden="true"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> também começa</p>
+  </form>
+
+  <p class="abertura-garantia" id="abertura-garantia">
+    <i class="bi bi-shield-check" aria-hidden="true"></i>
+    Nada fica salvo: ao fechar o navegador, a lista é apagada. Fotos e matrículas são ignoradas.
+  </p>
+</section>
