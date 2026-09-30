@@ -86,15 +86,17 @@ está na lista) e **"Limpar lista"** (confirmação).
 | Tempo | O que acontece |
 |---|---|
 | 0 s | Botão afunda (escala 0,97) e vira "Sorteando…"; o holofote intensifica |
-| 0–0,3 s | O navegador pede o resultado ao servidor e os nomes **já começam a girar** |
-| 0,3–4 s | Desaceleração natural (`power4.out`) até o nome escolhido; "tic" sonoro opcional a cada nome |
-| 4,0 s | O nome para com leve "quique" (`back.out`); linhas douradas acendem |
-| 4,2 s | Nome **gigante, letra por letra** (SplitText) + "12º sorteado" |
-| 4,3 s | **Confete** dourado e verde dos dois lados (canvas-confetti) |
-| 4,8 s | O nome **voa** de "Disponíveis" para "Sorteados" (GSAP Flip); contadores sobem animados |
+| 0–0,3 s | O navegador pede o resultado ao servidor e a roleta **já começa a girar** |
+| 0,3–4 s | Desaceleração natural (`power4.out`). Na roleta **não aparecem nomes**: cada linha é uma sequência de **0 e 1** em bytes (`01101001 10010110 01011010`), **todas do mesmo tamanho** (ninguém adivinha pelo comprimento); linhas vizinhas correm na horizontal em **direções opostas** |
+| 4,0 s | A roleta para com leve "quique" (`back.out`); linhas douradas acendem; a linha do meio continua em bits |
+| 4,1–5,6 s | **Decodificação**: os bits da linha parada passam para o centro do palco e se transformam, **letra a letra**, no nome do sorteado (bits ainda não revelados continuam piscando); "12º sorteado" aparece junto |
+| 5,6 s | O texto em fonte mono "assenta" no nome gigante em ouro (Bricolage Grotesque) |
+| 5,7 s | **Confete** dourado e verde dos dois lados (canvas-confetti) |
+| 6,0 s | O nome **voa** de "Disponíveis" para "Já sorteados" (GSAP Flip); contadores sobem animados |
 
 - O botão fica desabilitado durante a animação.
-- Com `prefers-reduced-motion`: sem giro; o nome aparece com fade suave.
+- Com `prefers-reduced-motion`: sem giro, sem bits piscando e sem decodificação; o nome aparece com fade suave.
+- Os bits são só visuais (gerados no navegador); o sorteado continua sendo escolhido pelo servidor.
 - `aria-live` anuncia "Sorteado: Nome do aluno" para leitores de tela.
 
 ## Micro-interações

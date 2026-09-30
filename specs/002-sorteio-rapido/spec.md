@@ -25,9 +25,10 @@ servidor; cada visitante tem a sua lista; publicável na Vercel (código no GitH
 ### História de Usuário 1 - Colar os nomes e sortear (Prioridade: P1) 🎯
 
 O professor abre o link do site, cola a lista de alunos copiada do SUAP (ou digita um nome
-por linha), vê quantos nomes foram encontrados e começa. Ao clicar em "Sortear", os nomes
-giram, desaceleram e param no sorteado, que aparece em destaque com a ordem ("1º
-sorteado") e passa de "Disponíveis" para "Já sorteados".
+por linha), vê quantos nomes foram encontrados e começa. Ao clicar em "Sortear", a roleta
+gira sequências de 0 e 1 (ninguém adivinha o nome antes da hora), desacelera e, ao parar, os
+bits se transformam letra a letra no nome do sorteado, que aparece em destaque com a ordem
+("1º sorteado") e passa de "Disponíveis" para "Já sorteados".
 
 **Por que esta prioridade**: é a ferramenta inteira; sem isso não existe produto.
 
@@ -45,9 +46,10 @@ ir para "Já sorteados" com os contadores 31 / 1.
    espaços), **Quando** o professor cola, **Então** o nome entra uma vez só.
 4. **Dado** um texto vazio ou sem nomes, **Quando** o professor tenta usar a lista,
    **Então** o sistema avisa que nenhum nome foi encontrado e continua sem lista.
-5. **Dado** a lista em uso, **Quando** o professor clica em "Sortear", **Então** os nomes
-   giram, desaceleram e param em um nome disponível, exibido em destaque com a ordem, que
-   passa para "Já sorteados".
+5. **Dado** a lista em uso, **Quando** o professor clica em "Sortear", **Então** a roleta
+   gira sequências de 0 e 1 do mesmo tamanho, desacelera, para e os bits se transformam no
+   nome sorteado (um nome disponível), exibido em destaque com a ordem, que passa para "Já
+   sorteados".
 6. **Dado** um nome já sorteado, **Quando** novos sorteios acontecem, **Então** esse nome
    não sai de novo até o professor reiniciar.
 7. **Dado** que todos já foram sorteados, **Quando** o professor olha a tela, **Então** o
@@ -190,8 +192,10 @@ tem a sua lista; fechar o navegador, abrir de novo e ver o campo de colar nomes 
 - **FR-010**: Ao clicar em "Sortear", o sistema DEVE sortear um nome apenas entre os
   disponíveis, de forma aleatória e imprevisível, definido antes do fim da animação; a
   animação apenas revela o resultado.
-- **FR-011**: Durante o sorteio, os nomes DEVEM girar, desacelerar e parar no sorteado,
-  exibido em destaque com a ordem na rodada ("3º sorteado").
+- **FR-011**: Durante o sorteio, a roleta DEVE girar sequências de 0 e 1 (bytes), todas do
+  mesmo tamanho e com linhas vizinhas correndo em direções opostas, sem mostrar nenhum nome;
+  ao parar, os bits DEVEM se transformar, letra a letra, no nome do sorteado, exibido em
+  destaque com a ordem na rodada ("3º sorteado").
 - **FR-012**: Um nome sorteado NÃO DEVE sair de novo até o sorteio ser reiniciado,
   inclusive com cliques repetidos ou duas abas abertas.
 - **FR-013**: O botão "Sortear" DEVE ficar desabilitado durante a animação.
@@ -240,8 +244,9 @@ tem a sua lista; fechar o navegador, abrir de novo e ver o campo de colar nomes 
 - **SC-002**: Em uma lista com N nomes, N sorteios seguidos produzem N nomes diferentes
   (verificado com N = 32).
 - **SC-003**: O professor vai do site aberto ao primeiro sorteado em menos de 30 segundos.
-- **SC-004**: Com a animação padrão, cada sorteio leva de 3 a 6 segundos do clique até o
-  nome parar; com "reduzir movimento", menos de 1 segundo.
+- **SC-004**: Com a animação padrão, a roleta leva de 3 a 6 segundos do clique até parar e
+  o nome fica completo em até 2 segundos depois disso; com "reduzir movimento", o nome
+  aparece em menos de 1 segundo.
 - **SC-005**: Em 10 tentativas de duplo clique rápido em "Sortear", cada tentativa sorteia
   exatamente 1 nome.
 - **SC-006**: No modo apresentação, o nome sorteado é legível do fundo de uma sala comum

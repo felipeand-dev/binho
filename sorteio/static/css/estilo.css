@@ -798,19 +798,38 @@ textarea.entrada {
   top: 50%;
   height: var(--altura-item);
   margin-top: calc(var(--altura-item) / -2);
-  padding-inline: var(--esp-6);
   overflow: hidden;
-  text-align: center;
   line-height: var(--altura-item);
-  font-family: var(--fonte-display);
-  font-weight: 700;
-  font-size: calc(var(--altura-item) * 0.44);
-  font-variation-settings: 'wdth' 85;
-  letter-spacing: -0.02em;
   white-space: nowrap;
-  text-overflow: ellipsis;
   color: var(--texto-palco);
   will-change: transform, opacity;
+  /* bordas esmaecidas: os bytes entram e saem suavemente pelos lados */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+
+/* Faixa de bytes (0 e 1): todas do mesmo tamanho; linhas vizinhas em direções opostas. */
+.fita-bits {
+  display: inline-block;
+  font-family: var(--fonte-mono);
+  font-weight: 500;
+  font-size: calc(var(--altura-item) * 0.4);
+  letter-spacing: 0.06em;
+  animation: bits-para-esquerda 2.4s linear infinite;
+}
+
+.fita-item.para-direita .fita-bits {
+  animation-name: bits-para-direita;
+}
+
+@keyframes bits-para-esquerda {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes bits-para-direita {
+  from { transform: translate3d(-50%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
 }
 
 .roleta-linha {
@@ -864,6 +883,19 @@ textarea.entrada {
 
 .revelacao-convite {
   color: rgb(238 242 239 / 32%);
+}
+
+/* Durante a decodificação: bits em fonte mono que viram o nome letra a letra. */
+.revelacao-nome.decodificando {
+  max-width: 22ch;
+  font-family: var(--fonte-mono);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 1rem + 2.4vw, 3.25rem);
+  font-variation-settings: normal;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  color: #fff;
+  overflow-wrap: anywhere;
 }
 
 .revelacao.vencedor .revelacao-nome {
@@ -1150,6 +1182,11 @@ textarea.entrada {
 .modo-apresentacao .revelacao-nome {
   max-width: 14ch;
   font-size: clamp(3rem, 1rem + 8vw, 12vw);
+}
+
+.modo-apresentacao .revelacao-nome.decodificando {
+  max-width: 24ch;
+  font-size: clamp(2.5rem, 1rem + 4vw, 5.5vw);
 }
 
 .modo-apresentacao [data-estado='completo'] .revelacao-nome {

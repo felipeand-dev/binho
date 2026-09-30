@@ -6,11 +6,14 @@
  * embaralhada dos nomes que passam na fita é apenas visual.
  *
  * Linha do tempo (docs/diretrizes-visuais.md):
- *   0 s      botão "Sorteando…", holofote intensifica, fita começa a girar
- *   ~0,1 s   resposta do servidor → a fita desacelera (power4.out) até o nome
- *   ~4,3 s   parada com leve quique (back.out); nome gigante letra a letra (SplitText)
- *   +0,1 s   confete verde e ouro (canvas-confetti)
- *   +0,5 s   o nome voa para "Já sorteados" (Flip); contadores sobem
+ *   0 s      botão "Sorteando…", holofote intensifica, a roleta começa a girar
+ *            mostrando só bytes (0 e 1), todos do mesmo tamanho, em direções opostas
+ *   ~0,1 s   resposta do servidor → a roleta desacelera (power4.out)
+ *   ~4,3 s   parada com leve quique (back.out)
+ *   +1,5 s   decodificação: os bits viram, letra a letra, o nome do sorteado
+ *   depois   nome gigante em ouro, confete (canvas-confetti), voo para "Já sorteados"
+ *
+ * Os bits são só visuais (Math.random no navegador); não influenciam o resultado.
  */
 (function () {
   'use strict';
@@ -21,9 +24,7 @@
   const S = window.Sorteio;
   const temGsap = Boolean(window.gsap);
   const temFlip = temGsap && Boolean(window.Flip);
-  const temSplit = temGsap && Boolean(window.SplitText);
   if (temFlip) gsap.registerPlugin(Flip);
-  if (temSplit) gsap.registerPlugin(SplitText);
   const semMovimento = S.REDUZIR_MOVIMENTO || !temGsap;
 
   const formSortear = document.getElementById('form-sortear');
@@ -42,61 +43,77 @@
   const DESACELERACAO_MINIMA = 2.6;
   const QUIQUE = 0.35;
   const TEMPO_LIMITE = 8000;      // ms; depois disso o sorteio é abandonado com erro
+  const BYTES_POR_LINHA = 3;      // toda linha tem o mesmo tamanho: ninguém adivinha pelo comprimento
+  const DECODIFICACAO = 1.5;      // segundos para os bits virarem o nome
 
   let emAndamento = false;
   let pularPedido = false;   // o professor pediu para pular antes da resposta chegar
   let pulando = false;       // o professor pulou durante a desaceleração
   let linhaDoTempo = null;
-  let divisao = null;
+
+  /* ------------------------------------------------------------------------
+   * Bytes de exibição: cada linha da roleta é uma sequência de 0 e 1.
+   * Gerados a partir do número da linha, para a mesma linha não "piscar" ao
+   * ser redesenhada. Só visual: o sorteado vem do servidor.
+   * ---------------------------------------------------------------------- */
+
+  function geradorDeBits(semente) {
+    let x = semente >>> 0;
+    return () => {
+      x = (x + 0x6D2B79F5) >>> 0;
+      let t = Math.imul(x ^ (x >>> 15), 1 | x);
+      t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+      return ((t ^ (t >>> 14)) >>> 0) & 1;
+    };
+  }
+
+  function bytes(quantidade, proximoBit) {
+    const lista = [];
+    for (let b = 0; b < quantidade; b += 1) {
+      let byte = '';
+      for (let i = 0; i < 8; i += 1) byte += proximoBit();
+      lista.push(byte);
+    }
+    return lista.join(' ');
+  }
+
+  const bitAleatorio = () => (Math.random() < 0.5 ? '0' : '1');
 
   /* ------------------------------------------------------------------------
    * Fita virtual: 7 linhas reaproveitadas; a posição `pos` é contínua e a
-   * linha do meio é sempre o nome em `nomeEm(Math.round(pos))`.
+   * linha do meio é sempre a de índice Math.round(pos). Cada linha é uma
+   * faixa de bytes que corre na horizontal, alternando a direção.
    * ---------------------------------------------------------------------- */
 
-  function embaralharParaExibir(nomes) {
-    const copia = nomes.slice();
-    for (let i = copia.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copia[i], copia[j]] = [copia[j], copia[i]];
-    }
-    return copia;
-  }
-
   function criarFita() {
-    const nomesDisponiveis = [...listaDisponiveis.querySelectorAll('[data-nome]')].map((li) => li.dataset.nome);
-    let nomes = nomesDisponiveis;
-    if (nomes.length < 4) {
-      // Poucos disponíveis: completa a fita com nomes já sorteados só para dar ritmo.
-      const extras = [...listaSorteados.querySelectorAll('[data-nome]')].map((li) => li.dataset.nome);
-      nomes = nomes.concat(extras);
-    }
-    if (!nomes.length) nomes = ['…'];
-    nomes = embaralharParaExibir(nomes);
+    const sal = Math.floor(Math.random() * 1e9);
+    const bitsEm = (indice) => bytes(BYTES_POR_LINHA, geradorDeBits(sal + indice * 7919));
 
     fitaEl.replaceChildren();
     const linhas = [];
     for (let j = -3; j <= 3; j += 1) {
       const linha = document.createElement('div');
       linha.className = 'fita-item';
+      const faixa = document.createElement('span');
+      faixa.className = 'fita-bits';
+      linha.append(faixa);
       fitaEl.append(linha);
-      linhas.push({ j, el: linha, texto: '' });
+      linhas.push({ j, el: linha, faixa, indice: null });
     }
     const altura = linhas[0].el.offsetHeight || 80;
-    const fixos = new Map();
     const estado = { pos: 0 };
-
-    const nomeEm = (indice) => fixos.get(indice)
-      ?? nomes[((indice % nomes.length) + nomes.length) % nomes.length];
 
     function desenhar() {
       const base = Math.floor(estado.pos);
       const fracao = estado.pos - base;
       for (const linha of linhas) {
-        const texto = nomeEm(base + linha.j);
-        if (texto !== linha.texto) {
-          linha.el.textContent = texto;
-          linha.texto = texto;
+        const indice = base + linha.j;
+        if (indice !== linha.indice) {
+          const trecho = bitsEm(indice);
+          // A faixa repete o trecho para a rolagem horizontal não ter emenda.
+          linha.faixa.textContent = `${trecho} ${trecho} ${trecho} ${trecho}`;
+          linha.el.classList.toggle('para-direita', Math.abs(indice) % 2 === 1);
+          linha.indice = indice;
         }
         const distancia = linha.j - fracao;
         const afastamento = Math.min(Math.abs(distancia), 3);
@@ -107,11 +124,60 @@
     }
 
     desenhar();
-    return {
-      estado,
-      desenhar,
-      fixar(indice, nome) { fixos.set(indice, nome); },
-    };
+    return { estado, desenhar, bitsEm };
+  }
+
+  /* ------------------------------------------------------------------------
+   * Decodificação: os bits viram o nome, letra a letra (esquerda → direita).
+   * Posições ainda não reveladas mostram 0/1 trocando ~20 vezes por segundo.
+   * ---------------------------------------------------------------------- */
+
+  function misturarBitsENome(inicial, nome, progresso) {
+    const FASE_TAMANHO = 0.18; // primeiro os bits encolhem/crescem até o tamanho do nome
+    if (progresso < FASE_TAMANHO) {
+      const t = progresso / FASE_TAMANHO;
+      const tamanho = Math.round(inicial.length + (nome.length - inicial.length) * t);
+      let texto = '';
+      for (let i = 0; i < tamanho; i += 1) texto += inicial[i] === ' ' ? ' ' : bitAleatorio();
+      return texto;
+    }
+    const revelados = Math.floor(((progresso - FASE_TAMANHO) / (1 - FASE_TAMANHO)) * nome.length);
+    let texto = nome.slice(0, revelados);
+    for (let i = revelados; i < nome.length; i += 1) texto += nome[i] === ' ' ? ' ' : bitAleatorio();
+    return texto;
+  }
+
+  function adicionarDecodificacao(tl, inicial, nome) {
+    const estado = { p: 0 };
+    let ultimoQuadro = 0;
+    tl.to(estado, {
+      p: 1,
+      duration: DECODIFICACAO,
+      ease: 'none',
+      onUpdate: () => {
+        const agora = performance.now();
+        if (agora - ultimoQuadro < 50 && estado.p < 1) return; // ~20 trocas por segundo
+        ultimoQuadro = agora;
+        nomeEl.textContent = misturarBitsENome(inicial, nome, estado.p);
+      },
+    });
+    tl.call(() => {
+      nomeEl.textContent = nome;
+      nomeEl.classList.remove('decodificando');
+      revelacao.classList.add('vencedor');
+    });
+    tl.fromTo(
+      nomeEl,
+      { opacity: 0.35, scale: 0.94 },
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 0.4,
+        ease: 'power3.out',
+        immediateRender: false, // o estado inicial só vale na hora de assentar
+        clearProps: 'opacity,transform',
+      },
+    );
   }
 
   /* ------------------------------------------------------------------------
@@ -167,15 +233,18 @@
    * Revelação e movimentação nas listas
    * ---------------------------------------------------------------------- */
 
-  function prepararRevelacao(dados) {
-    if (divisao) {
-      divisao.revert();
-      divisao = null;
-    }
+  /* Com `bitsIniciais`, o nome só aparece na decodificação (nunca antes da hora). */
+  function prepararRevelacao(dados, bitsIniciais = null) {
     revelacao.classList.remove('vencedor');
     nomeEl.classList.remove('revelacao-convite');
     ordemEl.textContent = `${dados.ordem}º sorteado`;
-    nomeEl.textContent = dados.nome;
+    if (bitsIniciais) {
+      nomeEl.classList.add('decodificando');
+      nomeEl.textContent = bitsIniciais;
+    } else {
+      nomeEl.classList.remove('decodificando');
+      nomeEl.textContent = dados.nome;
+    }
   }
 
   function criarItemSorteado(dados) {
@@ -355,8 +424,7 @@
     const decorrido = (performance.now() - inicio) / 1000;
     const desaceleracao = Math.max(DESACELERACAO_MINIMA, PARADA_ALVO - decorrido - QUIQUE);
     const alvo = Math.round(fita.estado.pos) + Math.max(8, Math.round((VELOCIDADE * desaceleracao) / 4));
-    fita.fixar(alvo, dados.nome);
-    prepararRevelacao(dados);
+    prepararRevelacao(dados, fita.bitsEm(alvo));
 
     const tl = gsap.timeline({ data: 'revelacao', onComplete: () => concluir(dados) });
     linhaDoTempo = tl;
@@ -364,24 +432,12 @@
       .to(fita.estado, { pos: alvo, duration: QUIQUE, ease: 'back.out(3)', onUpdate: fita.desenhar })
       .call(() => {
         palco.dataset.estado = 'pronto';
-        revelacao.classList.add('vencedor');
       })
       .from(ordemEl, { opacity: 0, y: 8, duration: 0.3, ease: 'power2.out' }, '<');
+    // Os bits da linha que parou no meio passam para o centro e viram o nome.
+    adicionarDecodificacao(tl, fita.bitsEm(alvo), dados.nome);
 
-    if (temSplit) {
-      divisao = SplitText.create(nomeEl, { type: 'words,chars', aria: 'auto' });
-      tl.from(divisao.chars, {
-        yPercent: 70,
-        opacity: 0,
-        duration: 0.5,
-        ease: 'power3.out',
-        stagger: { amount: Math.min(0.6, divisao.chars.length * 0.03) },
-      }, '<');
-    } else {
-      tl.from(nomeEl, { opacity: 0, y: 16, duration: 0.4, ease: 'power3.out' }, '<');
-    }
-
-    tl.call(soltarConfete, null, '<0.1')
+    tl.call(soltarConfete, null, '<')
       .call(() => moverParaSorteados(dados, pulando), null, '+=0.25');
   }
 
@@ -438,10 +494,7 @@
 
   function mostrarUltimoDaLista() {
     const ultimo = listaSorteados.lastElementChild;
-    if (divisao) {
-      divisao.revert();
-      divisao = null;
-    }
+    nomeEl.classList.remove('decodificando');
     revelacao.classList.remove('vencedor');
     if (ultimo) {
       ordemEl.textContent = ultimo.querySelector('.item-aluno-ordem')?.textContent.replace('º', 'º sorteado') || '';

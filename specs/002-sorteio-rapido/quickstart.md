@@ -25,7 +25,7 @@ Abrir `http://127.0.0.1:8000/`. Não há `migrate`: o projeto não tem banco.
 | 5 | FR-006 | Campo vazio ou só espaços; e envio sem JavaScript | Botão "Começar o sorteio" desabilitado; o servidor recusa com "Nenhum nome encontrado"; continua sem lista |
 | 6 | FR-007 | Colar 81 nomes | Recusado com o limite de 80 |
 | 7 | FR-004 | Usar a lista de 32 | Palco com 32 em "Disponíveis"; contadores 32/0 |
-| 8 | FR-010, FR-011, FR-014, SC-004 | Clicar em "Sortear" | Nomes giram e param em 3–6 s; nome em destaque "1º sorteado"; vai para "Já sorteados"; 31/1 |
+| 8 | FR-010, FR-011, FR-014, SC-004 | Clicar em "Sortear" | Roleta gira só 0 e 1 (mesmo tamanho, linhas em direções opostas, nenhum nome), para em 3–6 s; os bits viram o nome letra a letra em até 2 s; "1º sorteado"; vai para "Já sorteados"; 31/1 |
 | 9 | FR-012, FR-015, SC-002 | Sortear até acabar (32) | 32 nomes diferentes; "Sortear" desabilitado com a mensagem de reiniciar |
 | 10 | FR-016 | "Reiniciar sorteio" → cancelar; → confirmar | Cancelar: nada muda; confirmar: 32 disponíveis, "Rodada 2" |
 | 11 | FR-017 | Sortear 3 e "Desfazer último" | 3º volta a Disponíveis; próximo sorteio recebe a ordem 3º; sem sorteios → desfazer indisponível |
